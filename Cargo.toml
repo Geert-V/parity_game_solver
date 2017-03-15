@@ -1,6 +1,6 @@
 [package]
 name = "parity_game_solver"
 version = "0.1.0"
-authors = ["Nanne Wielinga <nanne@mycel.nl>"]
+authors = ["Geert Verstegen <gverstegen@hotmail.com>","Nanne Wielinga <nanne@mycel.nl>"]
 
 [dependencies]
