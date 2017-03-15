@@ -1,11 +1,15 @@
+use std::collections::HashSet;
+use std::collections::HashMap;
+use std::collections::LinkedList;
+
 #[derive(Debug)]
-enum Owner {
+pub enum Owner {
     Even,
     Odd,
 }
 
 #[derive(Debug)]
-struct Node {
+pub struct Node {
     id: u32,
     prio: u32,
     owner: Owner,
@@ -14,11 +18,11 @@ struct Node {
 }
 
 #[derive(Debug)]
-struct Game {
+pub struct Game {
     nodes: HashMap<u32, Node>
 }
 
 #[derive(Debug)]
-struct Play {
+pub struct Play {
     nodes: LinkedList<u32>
 }
