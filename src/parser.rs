@@ -159,7 +159,7 @@ pub fn parse(parity_game: String) -> Game {
 /// - The string contains multiple headers.
 /// - The string contains an invalid header or node specification.
 pub fn parse_from_file(file_path: String) -> Game {
-    let mut file = File::open("aaa.txt")
+    let mut file = File::open(&file_path)
         .expect(&format!("Unknown file: '{}'.", file_path));
         
     let mut buf_reader = BufReader::new(file);
