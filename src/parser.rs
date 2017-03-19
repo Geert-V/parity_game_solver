@@ -17,7 +17,7 @@ use self::regex::Captures;
 /// If the provided string is a valid header, then the maximum node ID specified in this header is returned.
 /// This value is then wrapped in `Some`. Otherwise, if the string is not a valid header, `None` is returned.
 /// A valid header has the format: 'parity <identifier>'.
-fn try_parse_header(header: String) -> Option<u32> {
+fn try_parse_header(header: &str) -> Option<u32> {
     
     // Explanation:
     // '^'                : the start of the string.
@@ -31,7 +31,7 @@ fn try_parse_header(header: String) -> Option<u32> {
     /// Takes the maximum node ID from the regular expression captures, and returns it.
     ///
     /// Note that this is an internal function and that the panics should never happen if the regular expression is successfully matched.
-    fn as_id(caps : Captures) -> u32 {
+    fn as_id(caps: Captures) -> u32 {
         caps.name("max_id")
             .expect("No maximal identifier found in the header.")
             .as_str()
@@ -49,7 +49,7 @@ fn try_parse_header(header: String) -> Option<u32> {
 ///
 /// # Panics
 /// No value with the specified name has been captured.
-fn get_capture_as_string(caps : &Captures, name: &str) -> String {
+fn get_capture_as_string(caps: &Captures, name: &str) -> String {
     caps.name(name).unwrap().as_str().to_string()
 }
 
@@ -58,7 +58,7 @@ fn get_capture_as_string(caps : &Captures, name: &str) -> String {
 /// If the provided string is a valid node specification, then the node is returned.
 /// This value is then wrapped in `Some`. Otherwise, if the string is not a valid node specification, `None` is returned.
 /// A valid node specification has the format: '<identifier> <priority> <owner> <successor> [<name>] [;]'.
-fn try_parse_node_spec(node_spec: String) -> Option<Node> {
+fn try_parse_node_spec(node_spec: &str) -> Option<Node> {
 
     // Explanation:
     // '^'              : the start of the string.
@@ -111,8 +111,8 @@ fn try_parse_node_spec(node_spec: String) -> Option<Node> {
 ///
 /// # Panics
 /// The provided string is not a valid node specification.
-fn parse_node_spec(node_spec: String) -> Node {
-    try_parse_node_spec(node_spec.clone())
+fn parse_node_spec(node_spec: &str) -> Node {
+    try_parse_node_spec(node_spec)
         .expect(&format!("Invalid node specification: '{}'.", node_spec))
 }
 
@@ -121,19 +121,19 @@ fn parse_node_spec(node_spec: String) -> Node {
 /// # Panics
 /// - The string contains multiple headers.
 /// - The string contains an invalid header or node specification.
-pub fn parse(parity_game: String) -> Game {
+pub fn parse(parity_game: &str) -> Game {
     let mut nodes = HashMap::new();
     let mut lines = parity_game.trim().split(';');
 
     // Check if the first line is a header.
     let first_line = lines.next();
     let max_id = first_line
-        .map(|line| line.to_string())
+        .map(|line| line)
         .and_then(try_parse_header);
     
     // If the line is not a header (but does exist), parse it as a node specification.
     if max_id.is_none() && first_line.is_some() {
-        let node = parse_node_spec(first_line.unwrap().to_string());
+        let node = parse_node_spec(first_line.unwrap());
         nodes.insert(node.id, node);
     }
 
@@ -145,7 +145,7 @@ pub fn parse(parity_game: String) -> Game {
             continue;
         }
 
-        let node = parse_node_spec(line.to_string());
+        let node = parse_node_spec(line);
         nodes.insert(node.id, node);
     }
 
@@ -158,13 +158,15 @@ pub fn parse(parity_game: String) -> Game {
 /// - The file does not exist.
 /// - The string contains multiple headers.
 /// - The string contains an invalid header or node specification.
-pub fn parse_from_file(file_path: String) -> Game {
-    let mut file = File::open(&file_path)
-        .expect(&format!("Unknown file: '{}'.", file_path));
+pub fn parse_from_file(file_path: &str) -> Game {
+    let file = File::open(file_path)
+        .expect(&format!("Failed to open the file: '{}'.", file_path));
         
     let mut buf_reader = BufReader::new(file);
     let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents);
+    buf_reader
+        .read_to_string(&mut contents)
+        .expect(&format!("Failed to read the file: '{}'.", file_path));
 
-    parse(contents)
+    parse(&contents)
 }
