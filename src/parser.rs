@@ -4,9 +4,9 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
 
-use data::Game;
-use data::Node;
-use data::Owner;
+use pg::Game;
+use pg::Node;
+use pg::Owner;
 
 extern crate regex;
 use self::regex::Regex;

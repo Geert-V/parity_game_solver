@@ -38,6 +38,20 @@ pub struct Node {
 #[derive(Debug)]
 pub struct Game(pub HashMap<u32, Node>);
 
+impl Game {
+    
+    /// Returns the maximal priority of any node in the game.
+    ///
+    /// Returns the maximal priority of any node in the game, or 0 if there are no nodes defined.
+    fn max_prio(&self) -> u32 {
+        self.0
+            .values()
+            .map(|n| n.prio)
+            .max()
+            .unwrap_or(0)
+    }
+}
+
 #[derive(Debug)]
 pub struct Play(pub LinkedList<u32>);
 

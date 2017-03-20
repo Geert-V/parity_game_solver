@@ -1,4 +1,4 @@
-mod data;
+mod pg;
 mod parser;
 
 fn main() {
