@@ -40,3 +40,9 @@ pub struct Game(pub HashMap<u32, Node>);
 
 #[derive(Debug)]
 pub struct Play(pub LinkedList<u32>);
+
+#[derive(Debug)]
+pub struct Measure(pub Vec<u32>);
+
+#[derive(Debug)]
+pub struct Measures(pub HashMap<Node, HashSet<Measure>>);
