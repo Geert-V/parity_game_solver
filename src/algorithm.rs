@@ -3,11 +3,7 @@ use self::rand::Rng;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
-
-pub trait Strategy {
-    fn vertex(&self) -> &Node;
-}
-
+use strategies::Strategy;
 // slide 22
 fn prog(progress: &Progress, v: Node, w: Node) -> Progress {
     let m = HashMap::new();
@@ -21,6 +17,7 @@ fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
     let v = strategy.vertex();
     if v.owner == Owner::Even {
         // min
+        
     } else if v.owner == Owner::Odd {
         // max
     }
@@ -28,18 +25,6 @@ fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
     return Progress(m);
 } 
 
-pub struct RandomStrategy<'game> (Vec<&'game Node>);
-impl<'game> RandomStrategy<'game> {
-    pub fn new(game: &'game Game) -> RandomStrategy<'game> {
-        return RandomStrategy(game.0.iter().collect());
-    }
-}
-impl<'game> Strategy for RandomStrategy<'game> {
-    fn vertex(&self) -> &Node {
-        let v = rand::thread_rng().choose(&self.0);
-        return v.unwrap();
-    }
-}
 
 
 pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
