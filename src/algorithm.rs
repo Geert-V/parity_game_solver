@@ -3,10 +3,14 @@ use self::rand::Rng;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
-// fn prog() {
 
-// }
+// slide 22
+fn prog(progress: &Progress, v: Node, w: Node) -> Progress {
+    let m = HashMap::new();
+    return Progress(m);
+}
 
+// slide 26
 fn lift(game: &Game, progress: &Progress) -> Progress {
     let m = HashMap::new();
     // let v = rand::thread_rng().choose(&game.0);
