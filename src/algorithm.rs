@@ -38,7 +38,7 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let d = 1 + game.max_prio() as usize;
     let mut m = HashMap::new();
 
-    for (id, node) in game.0.iter() {
+    for node in game.0.values() {
         let measure = Measure(vec![0; d]);
         m.insert(node.id, MeasureT::Measure(measure));
     }
