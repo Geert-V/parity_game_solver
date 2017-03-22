@@ -4,6 +4,10 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
 
+pub trait Strategy {
+    fn vertex(&self) -> &Node;
+}
+
 // slide 22
 fn prog(progress: &Progress, v: Node, w: Node) -> Progress {
     let m = HashMap::new();
@@ -11,20 +15,34 @@ fn prog(progress: &Progress, v: Node, w: Node) -> Progress {
 }
 
 // slide 26
-fn lift(game: &Game, progress: &Progress) -> Progress {
+fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
     let m = HashMap::new();
-    // let v = rand::thread_rng().choose(&game.0);
-
-    // if v.owner == Owner::Even {
-    //     // min
-    // } else if v.owner == Owner::Odd {
-    //     // max
-    // }
+    // grab random vertex
+    let v = strategy.vertex();
+    if v.owner == Owner::Even {
+        // min
+    } else if v.owner == Owner::Odd {
+        // max
+    }
 
     return Progress(m);
 } 
 
-pub fn small_progress_measures(game: Game) -> Progress {
+pub struct RandomStrategy<'game> (Vec<&'game Node>);
+impl<'game> RandomStrategy<'game> {
+    pub fn new(game: &'game Game) -> RandomStrategy<'game> {
+        return RandomStrategy(game.0.iter().collect());
+    }
+}
+impl<'game> Strategy for RandomStrategy<'game> {
+    fn vertex(&self) -> &Node {
+        let v = rand::thread_rng().choose(&self.0);
+        return v.unwrap();
+    }
+}
+
+
+pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let d = 1 + game.max_prio() as usize;
     let mut m = HashMap::new();
 
@@ -33,7 +51,7 @@ pub fn small_progress_measures(game: Game) -> Progress {
     }
     let mut progress = Progress(m);
     loop {
-        let l = lift(&game, &progress);
+        let l = lift(&game, strategy, &progress);
         if l >= progress {
             break;
         }
