@@ -16,10 +16,10 @@ fn prog(game: &Game, v: &Node, w: &Node) -> MeasureT {
 }
 
 // slide 26
-fn lift(game: &Game, strategy: &Strategy, progress: Progress) -> Progress {
+fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
     // grab random vertex
     let v = strategy.vertex();
-    let mut progress = progress.clone();
+    let mut progress_val = progress.0.clone();
 
     let edges = v.succ.iter().map(|w| prog(game, v, game.0.get(w).unwrap()));
     let val = if v.owner == Owner::Even {
@@ -27,11 +27,11 @@ fn lift(game: &Game, strategy: &Strategy, progress: Progress) -> Progress {
         } else {
             edges.max().unwrap()
         };
-    if &val > progress.0.get(&v.id).unwrap() {
-        progress.0.insert(v.id, val);
+    if &val > progress_val.get(&v.id).unwrap() {
+        progress_val.insert(v.id, val);
     }
     
-    progress
+    Progress(progress_val)
 }
 
 pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
@@ -44,7 +44,7 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     }
     let mut progress = Progress(m);
     loop {
-        let l = lift(game, strategy, progress.clone());
+        let l = lift(game, strategy, &progress);
         if l >= progress {
             break;
         }
