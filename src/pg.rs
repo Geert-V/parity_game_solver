@@ -74,6 +74,72 @@ pub struct Play(pub LinkedList<u32>);
 #[derive(Debug, Eq)]
 pub struct Measure(pub Vec<u32>);
 
+impl Measure {
+
+    /// Returns `true` if this measure is equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    ///
+    /// #Panics
+    /// - The provided index is smaller than 0.
+    /// - The provided index is too big for either measure.
+    pub fn eq(&self, other: &Measure, i: usize) -> bool {
+        for x in 0..i {
+            if self.0[x] == other.0[x] { continue; }
+
+            return false;
+        }
+
+        true
+    }
+
+    /// Returns `true` if this measure is greater than the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    ///
+    /// #Panics
+    /// - The provided index is smaller than 0.
+    /// - The provided index is too big for either measure.
+    pub fn gt(&self, other: &Measure, i: usize) -> bool {
+        for x in 0..i {
+            if self.0[x] == other.0[x] { continue; }
+
+            return self.0[x] > other.0[x];
+        }
+
+        false
+    }
+
+    /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    ///
+    /// #Panics
+    /// - The provided index is smaller than 0.
+    /// - The provided index is too big for either measure.
+    pub fn ge(&self, other: &Measure, i: usize) -> bool {
+        self.gt(other, i) || self.eq(other, i)
+    }
+
+    /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    ///
+    /// #Panics
+    /// - The provided index is smaller than 0.
+    /// - The provided index is too big for either measure.
+    pub fn lt(&self, other: &Measure, i: usize) -> bool {
+        !self.ge(other, i)
+    }
+
+    /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    ///
+    /// #Panics
+    /// - The provided index is smaller than 0.
+    /// - The provided index is too big for either measure.
+    pub fn le(&self, other: &Measure, i: usize) -> bool {
+        !self.gt(other, i)
+    }
+}
+
+
 impl Ord for Measure {
     fn cmp(&self, other: &Measure) -> Ordering {
         Ordering::Greater// TODO: implement
@@ -87,7 +153,7 @@ impl PartialOrd for Measure {
 }
 impl PartialEq for Measure {
     fn eq(&self, other: &Measure) -> bool {
-        return true;// TODO: implement
+        return self.0 == other.0;
     }
 }
 
