@@ -247,15 +247,64 @@ impl PartialEq for MeasureT {
 }
 
 #[derive(Debug)]
-pub struct Progress(pub HashMap<u32, Measure>);
+pub struct Progress(pub HashMap<u32, MeasureT>);
+
+impl Progress {
+    fn nodes(&self) -> HashSet<&u32> {
+        self.0
+            .keys()
+            .collect::<HashSet<&u32>>()
+    }
+
+    fn measure(&self, node_id: &u32) -> &MeasureT {
+        &self.0[node_id]
+    }
+}
 
 impl PartialOrd for Progress {
     fn partial_cmp(&self, other: &Progress) -> Option<Ordering> {
-        Some(Ordering::Greater)
+        let self_v = self.nodes();
+        let other_v = self.nodes();
+        
+        if self_v != other_v {
+            return None;
+        }
+
+        if self == other {
+            return Some(Ordering::Equal);
+        }
+
+        let ords = self_v
+            .iter()
+            .map(|node_id| self.measure(node_id).cmp(other.measure(node_id)))
+            .collect::<HashSet<Ordering>>();
+
+        if ords.len() != 1 {
+            None
+        } else {
+            let ord = ords.iter().next().unwrap();
+            Some(*ord)
+        }
     }
 }
 impl PartialEq for Progress {
     fn eq(&self, other: &Progress) -> bool {
-        return true;
+        let self_v = self.nodes();
+        let other_v = self.nodes();
+
+        if self_v != other_v {
+            return false;
+        }
+
+        for node_id in self_v {
+            let self_m = self.measure(node_id);
+            let other_m = other.measure(node_id);
+
+            if self_m != other_m {
+                return false;
+            }
+        }
+
+        true
     }
 }
