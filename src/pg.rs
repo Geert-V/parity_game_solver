@@ -7,7 +7,7 @@ use std::hash::{Hash, Hasher, SipHasher};
 use std::cmp::Ordering;
 
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Owner {
     Even,
     Odd,
