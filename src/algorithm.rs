@@ -1,42 +1,41 @@
-extern crate rand;
-use self::rand::Rng;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
 use strategies::Strategy;
+use std::cmp;
 // slide 22
-fn prog(progress: &Progress, v: Node, w: Node) -> Progress {
-    let m = HashMap::new();
-    return Progress(m);
+fn prog<'game>(v: &Node, w: &Node) -> Measure {
+    return Measure(vec!(0));
 }
 
 // slide 26
-fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
-    let m = HashMap::new();
+fn lift<'game>(game: &Game, strategy: &'game Strategy, progress: &'game mut Progress) -> &'game mut Progress {
     // grab random vertex
     let v = strategy.vertex();
-    if v.owner == Owner::Even {
-        // min
-        
-    } else if v.owner == Owner::Odd {
-        // max
+
+    let edges = v.succ.iter().map(|w| prog(v, game.0.get(w).unwrap()));
+    let val = if v.owner == Owner::Even {
+            edges.min().unwrap()
+        } else {
+            edges.max().unwrap()
+        };
+    if &val > progress.0.get(&v.id).unwrap() {
+        progress.0.insert(v.id, val);
     }
+    
+    return progress;
+}
 
-    return Progress(m);
-} 
-
-
-
-pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
+pub fn small_progress_measures<'game>(game: &Game, strategy: &'game Strategy) -> &'game Progress {
     let d = 1 + game.max_prio() as usize;
     let mut m = HashMap::new();
 
-    for node in game.0.iter() {
-        m.insert(node.id, Measure(vec![0; d]));
+    for (id, node) in game.0.iter() {
+        m.insert(*id, Measure(vec![0; d]));
     }
-    let mut progress = Progress(m);
+    let progress = &mut Progress(m);
     loop {
-        let l = lift(&game, strategy, &progress);
+        let l = lift(game, strategy, progress);
         if l >= progress {
             break;
         }

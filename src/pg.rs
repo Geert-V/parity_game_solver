@@ -52,7 +52,7 @@ impl Hash for Node {
 
 
 #[derive(Debug)]
-pub struct Game(pub HashSet<Node>);
+pub struct Game(pub HashMap<u32, Node>);
 
 impl Game {
     
@@ -62,7 +62,7 @@ impl Game {
     pub fn max_prio(&self) -> u32 {
         self.0
             .iter()
-            .map(|n| n.prio)
+            .map(|(id, n)| n.prio)
             .max()
             .unwrap_or(0)
     }
@@ -71,7 +71,7 @@ impl Game {
 #[derive(Debug)]
 pub struct Play(pub LinkedList<u32>);
 
-#[derive(Debug, Eq)]
+#[derive(Debug, Eq, Clone)]
 pub struct Measure(pub Vec<u32>);
 
 impl Measure {
@@ -219,7 +219,7 @@ impl MeasureT {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Progress(pub HashMap<u32, Measure>);
 
 impl PartialOrd for Progress {
