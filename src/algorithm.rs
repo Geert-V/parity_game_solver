@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
 use strategies::Strategy;
-use std::cmp;
+
 // slide 22
 fn prog<'game>(v: &Node, w: &Node) -> Measure {
     return Measure(vec!(0));
@@ -30,8 +30,9 @@ pub fn small_progress_measures<'game>(game: &Game, strategy: &'game Strategy) ->
     let d = 1 + game.max_prio() as usize;
     let mut m = HashMap::new();
 
-    for (id, node) in game.0.iter() {
-        m.insert(*id, Measure(vec![0; d]));
+    for node in game.0.iter() {
+        let measure = Measure(vec![0; d]);
+        m.insert(node.id, MeasureT::Measure(measure));
     }
     let progress = &mut Progress(m);
     loop {

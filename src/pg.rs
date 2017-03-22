@@ -1,3 +1,4 @@
+use std::cmp;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::collections::LinkedList;
@@ -71,7 +72,7 @@ impl Game {
 #[derive(Debug)]
 pub struct Play(pub LinkedList<u32>);
 
-#[derive(Debug, Eq, Clone)]
+#[derive(Debug, Eq, Clone, Ord)]
 pub struct Measure(pub Vec<u32>);
 
 impl Measure {
@@ -149,24 +150,29 @@ impl Measure {
     }
 }
 
-impl Ord for Measure {
-    fn cmp(&self, other: &Measure) -> Ordering {
-        Ordering::Greater// TODO: implement
-    }
-}
-
 impl PartialOrd for Measure {
     fn partial_cmp(&self, other: &Measure) -> Option<Ordering> {
-        Some(self.cmp(other)) // TODO: implement
+        let max_l = cmp::max(self.0.len(), other.0.len());
+
+        if self.eq(other, max_l) {
+            Some(Ordering::Equal)
+        }
+        else if self.gt(other, max_l) {
+            Some(Ordering::Greater)
+        } else {
+            Some(Ordering::Less)
+        }
     }
 }
 impl PartialEq for Measure {
     fn eq(&self, other: &Measure) -> bool {
-        return self.0 == other.0;
+        let max_l = cmp::max(self.0.len(), other.0.len());
+        self.eq(other, max_l)
     }
 }
 
 /// A measure that can also be the special value `Top`.
+#[derive(Debug, Eq, Ord, Clone)]
 pub enum MeasureT {
 
     /// The value `Top` that is greater than any `Measure`.
@@ -182,10 +188,10 @@ impl MeasureT {
     /// Otherwise `false` is returned.
     pub fn eq(&self, other: &MeasureT, i: usize) -> bool {
         match (self, other) {
-            (&MeasureT::Top, &MeasureT::Top) => true,
-            (&MeasureT::Top, _)              => false,
-            (_, &MeasureT::Top)              => false,
-            (self_m, other_m)                => self_m.eq(other_m, i),
+            (&MeasureT::Top, &MeasureT::Top)                                  => true,
+            (&MeasureT::Top, _)                                               => false,
+            (_, &MeasureT::Top)                                               => false,
+            (&MeasureT::Measure(ref self_m), &MeasureT::Measure(ref other_m)) => self_m.eq(other_m, i),
         }
     }
 
@@ -193,10 +199,10 @@ impl MeasureT {
     /// Otherwise `false` is returned.
     pub fn gt(&self, other: &MeasureT, i: usize) -> bool {
         match (self, other) {
-            (&MeasureT::Top, &MeasureT::Top) => false,
-            (&MeasureT::Top, _)              => true,
-            (_, &MeasureT::Top)              => false,
-            (self_m, other_m)                => self_m.gt(other_m, i),
+            (&MeasureT::Top, &MeasureT::Top)                                  => false,
+            (&MeasureT::Top, _)                                               => true,
+            (_, &MeasureT::Top)                                               => false,
+            (&MeasureT::Measure(ref self_m), &MeasureT::Measure(ref other_m)) => self_m.gt(other_m, i),
         }
     }
 
@@ -219,16 +225,85 @@ impl MeasureT {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct Progress(pub HashMap<u32, Measure>);
+impl PartialOrd for MeasureT {
+    fn partial_cmp(&self, other: &MeasureT) -> Option<Ordering> {
+        match (self, other) {
+            (&MeasureT::Top, &MeasureT::Top)                                  => Some(Ordering::Equal),
+            (&MeasureT::Top, _)                                               => Some(Ordering::Greater),
+            (_, &MeasureT::Top)                                               => Some(Ordering::Less),
+            (&MeasureT::Measure(ref self_m), &MeasureT::Measure(ref other_m)) => self_m.partial_cmp(other_m),
+        }
+    }
+}
+impl PartialEq for MeasureT {
+    fn eq(&self, other: &MeasureT) -> bool {
+        match (self, other) {
+            (&MeasureT::Top, &MeasureT::Top)                                  => true,
+            (&MeasureT::Top, _)                                               => false,
+            (_, &MeasureT::Top)                                               => false,
+            (&MeasureT::Measure(ref self_m), &MeasureT::Measure(ref other_m)) => self_m == other_m
+        }
+    }
+}
 
+#[derive(Debug, Clone)]
+pub struct Progress(pub HashMap<u32, MeasureT>);
+
+impl Progress {
+    fn nodes(&self) -> HashSet<&u32> {
+        self.0
+            .keys()
+            .collect::<HashSet<&u32>>()
+    }
+
+    fn measure(&self, node_id: &u32) -> &MeasureT {
+        &self.0[node_id]
+    }
+}
 impl PartialOrd for Progress {
     fn partial_cmp(&self, other: &Progress) -> Option<Ordering> {
-        Some(Ordering::Greater)
+        let self_v = self.nodes();
+        let other_v = self.nodes();
+        
+        if self_v != other_v {
+            return None;
+        }
+
+        if self == other {
+            return Some(Ordering::Equal);
+        }
+
+        let ords = self_v
+            .iter()
+            .map(|node_id| self.measure(node_id).cmp(other.measure(node_id)))
+            .collect::<HashSet<Ordering>>();
+
+        if ords.len() != 1 {
+            None
+        } else {
+            let ord = ords.iter().next().unwrap();
+            Some(*ord)
+        }
     }
 }
 impl PartialEq for Progress {
     fn eq(&self, other: &Progress) -> bool {
-        return true;
+        let self_v = self.nodes();
+        let other_v = self.nodes();
+
+        if self_v != other_v {
+            return false;
+        }
+
+        for node_id in self_v {
+            let self_m = self.measure(node_id);
+            let other_m = other.measure(node_id);
+
+            if self_m != other_m {
+                return false;
+            }
+        }
+
+        true
     }
 }
