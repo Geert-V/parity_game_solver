@@ -1,3 +1,7 @@
+extern crate rand;
+use self::rand::Rng;
+use pg::*;
+
 pub trait Strategy {
     fn vertex(&self) -> &Node;
 }
