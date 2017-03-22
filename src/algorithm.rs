@@ -1,19 +1,27 @@
-use std::collections::HashSet;
 use std::collections::HashMap;
 use pg::*;
 use strategies::Strategy;
 
 // slide 22
-fn prog<'game>(v: &Node, w: &Node) -> Measure {
-    return Measure(vec!(0));
+fn prog(game: &Game, v: &Node, w: &Node) -> MeasureT {
+    let d = 1 + game.max_prio() as usize;
+    let mut res = vec![0; d];
+    if v.prio % 2 == 0 {
+        
+    } else {
+        
+    }
+
+    return MeasureT::Measure(Measure(res));
 }
 
 // slide 26
-fn lift<'game>(game: &Game, strategy: &'game Strategy, progress: &'game mut Progress) -> &'game mut Progress {
+fn lift(game: &Game, strategy: &Strategy, progress: Progress) -> Progress {
     // grab random vertex
     let v = strategy.vertex();
+    let mut progress = progress.clone();
 
-    let edges = v.succ.iter().map(|w| prog(v, game.0.get(w).unwrap()));
+    let edges = v.succ.iter().map(|w| prog(game, v, game.0.get(w).unwrap()));
     let val = if v.owner == Owner::Even {
             edges.min().unwrap()
         } else {
@@ -23,20 +31,20 @@ fn lift<'game>(game: &Game, strategy: &'game Strategy, progress: &'game mut Prog
         progress.0.insert(v.id, val);
     }
     
-    return progress;
+    progress
 }
 
-pub fn small_progress_measures<'game>(game: &Game, strategy: &'game Strategy) -> &'game Progress {
+pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let d = 1 + game.max_prio() as usize;
     let mut m = HashMap::new();
 
-    for node in game.0.iter() {
+    for (id, node) in game.0.iter() {
         let measure = Measure(vec![0; d]);
         m.insert(node.id, MeasureT::Measure(measure));
     }
-    let progress = &mut Progress(m);
+    let mut progress = Progress(m);
     loop {
-        let l = lift(game, strategy, progress);
+        let l = lift(game, strategy, progress.clone());
         if l >= progress {
             break;
         }
