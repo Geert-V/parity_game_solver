@@ -76,15 +76,38 @@ pub struct Measure(pub Vec<u32>);
 
 impl Measure {
 
+    /// Returns the value on the specified index wrapped in a `Some` or `None` if the index lies outside the range of values.
+    fn get_value(&self, i: usize) -> Option<u32> {
+        if i < 0 {
+            None
+        } else if self.0.len() <= i {
+            Some(self.0[i])
+        } else {
+            None
+        }
+    }
+
+    /// Returns the value on the specified index or 0 if the index lies outside the range of values.
+    fn get_value_or_zero(&self, i: usize) -> u32 {
+        let value = self.get_value(i);
+
+        match value {
+            Some(v) => v,
+            None    => 0,
+        }
+    }
+
     /// Returns `true` if this measure is equal to the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
-    ///
-    /// #Panics
-    /// - The provided index is smaller than 0.
-    /// - The provided index is too big for either measure.
     pub fn eq(&self, other: &Measure, i: usize) -> bool {
+
         for x in 0..i {
-            if self.0[x] == other.0[x] { continue; }
+            let self_v = self.get_value_or_zero(x);
+            let other_v = other.get_value_or_zero(x);
+
+            if self_v == other_v {
+                continue;
+            }
 
             return false;
         }
@@ -94,15 +117,14 @@ impl Measure {
 
     /// Returns `true` if this measure is greater than the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
-    ///
-    /// #Panics
-    /// - The provided index is smaller than 0.
-    /// - The provided index is too big for either measure.
     pub fn gt(&self, other: &Measure, i: usize) -> bool {
         for x in 0..i {
-            if self.0[x] == other.0[x] { continue; }
+            let self_v = self.get_value_or_zero(x);
+            let other_v = other.get_value_or_zero(x);
 
-            return self.0[x] > other.0[x];
+            if self_v == other_v { continue; }
+
+            return self_v > other_v;
         }
 
         false
@@ -110,35 +132,22 @@ impl Measure {
 
     /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
-    ///
-    /// #Panics
-    /// - The provided index is smaller than 0.
-    /// - The provided index is too big for either measure.
     pub fn ge(&self, other: &Measure, i: usize) -> bool {
         self.gt(other, i) || self.eq(other, i)
     }
 
     /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
-    ///
-    /// #Panics
-    /// - The provided index is smaller than 0.
-    /// - The provided index is too big for either measure.
     pub fn lt(&self, other: &Measure, i: usize) -> bool {
         !self.ge(other, i)
     }
 
     /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
-    ///
-    /// #Panics
-    /// - The provided index is smaller than 0.
-    /// - The provided index is too big for either measure.
     pub fn le(&self, other: &Measure, i: usize) -> bool {
         !self.gt(other, i)
     }
 }
-
 
 impl Ord for Measure {
     fn cmp(&self, other: &Measure) -> Ordering {
