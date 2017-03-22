@@ -166,7 +166,58 @@ impl PartialEq for Measure {
     }
 }
 
+/// A measure that can also be the special value `Top`.
+pub enum MeasureT {
 
+    /// The value `Top` that is greater than any `Measure`.
+    Top,
+
+    /// A measure with a value.
+    Measure(Measure)
+}
+
+impl MeasureT {
+
+    /// Returns `true` if this measure is equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    pub fn eq(&self, other: &MeasureT, i: usize) -> bool {
+        match (self, other) {
+            (&MeasureT::Top, &MeasureT::Top) => true,
+            (&MeasureT::Top, _)              => false,
+            (_, &MeasureT::Top)              => false,
+            (self_m, other_m)                => self_m.eq(other_m, i),
+        }
+    }
+
+    /// Returns `true` if this measure is greater than the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    pub fn gt(&self, other: &MeasureT, i: usize) -> bool {
+        match (self, other) {
+            (&MeasureT::Top, &MeasureT::Top) => false,
+            (&MeasureT::Top, _)              => true,
+            (_, &MeasureT::Top)              => false,
+            (self_m, other_m)                => self_m.gt(other_m, i),
+        }
+    }
+
+    /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    pub fn ge(&self, other: &MeasureT, i: usize) -> bool {
+        self.gt(other, i) || self.eq(other, i)
+    }
+
+    /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    pub fn lt(&self, other: &MeasureT, i: usize) -> bool {
+        !self.ge(other, i)
+    }
+
+    /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
+    /// Otherwise `false` is returned.
+    pub fn le(&self, other: &MeasureT, i: usize) -> bool {
+        !self.gt(other, i)
+    }
+}
 
 #[derive(Debug)]
 pub struct Progress(pub HashMap<u32, Measure>);
