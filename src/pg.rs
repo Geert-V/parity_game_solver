@@ -83,7 +83,7 @@ impl Game {
     }
 
     pub fn new_measure(&self) -> MeasureT {
-        let d = self.max_prio() as usize;
+        let d = self.max_prio() as usize + 1;
         let m = Measure(vec![0; d]);
 
         MeasureT::Measure(m)
@@ -117,16 +117,16 @@ impl Game {
 
     fn _max_measure(id_to_node: &HashMap<u32, Node>, max_prio: u32) -> Measure {
         let prio = max_prio.clone();
-        let mut measure = vec![0; prio as usize];
+        let mut measure = vec![0; prio as usize + 1];
 
-        // Get the last even index of the measure.
-        let mut i = (prio as i32) - 1;
+        // Get the last odd index of the measure.
+        let mut i = prio as i32;
 
-        if i % 2 == 1 {
+        if i % 2 == 0 {
             i -= 1;
         }
 
-        while i >= 0 {
+        while i >= 1 {
             let nr_of_nodes_with_prio = Game::_nodes_with_prio(id_to_node, i as u32).len(); 
             measure[i as usize] = nr_of_nodes_with_prio as u32;
 
@@ -224,10 +224,10 @@ impl PartialOrd for Measure {
     fn partial_cmp(&self, other: &Measure) -> Option<Ordering> {
         let max_l = cmp::max(self.0.len(), other.0.len());
 
-        if self.eq(other, max_l) {
+        if self.eq(other, max_l - 1) {
             Some(Ordering::Equal)
         }
-        else if self.gt(other, max_l) {
+        else if self.gt(other, max_l - 1) {
             Some(Ordering::Greater)
         } else {
             Some(Ordering::Less)
@@ -237,7 +237,7 @@ impl PartialOrd for Measure {
 impl PartialEq for Measure {
     fn eq(&self, other: &Measure) -> bool {
         let max_l = cmp::max(self.0.len(), other.0.len());
-        self.eq(other, max_l)
+        self.eq(other, max_l - 1)
     }
 }
 
@@ -264,15 +264,15 @@ impl MeasureT {
             else {
                 // Clone the current measure and get its last index.
                 let mut new = cur.clone();
-                let mut i = (cur.length() as i32) - 1;
+                let mut i = cur.length() as i32;
 
-                // We can only increase the even numbers, so if odd go the the closest even number.
-                if i % 2 != 0 {
+                // We can only increase the odd numbers, so if even go the the closest odd number.
+                if i % 2 == 0 {
                     i -= 1;
                 }
 
-                // Move of the vector backwards and increase the value where possible.
-                while i >= 0 {
+                // Move backwards through the vector and increase the value where possible.
+                while i >= 1 {
                     let max_v = max.0[i as usize];
                     let cur_v = cur.0[i as usize];
 
@@ -286,7 +286,7 @@ impl MeasureT {
                         new.0[i as usize] = 0;
                     }
 
-                    // Only the even numbers can change.
+                    // Only the odd numbers can change.
                     i -= 2;
                 }
 
