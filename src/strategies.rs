@@ -10,7 +10,7 @@ pub trait Strategy {
 pub struct RandomStrategy<'game> (Vec<&'game Node>);
 impl<'game> RandomStrategy<'game> {
     pub fn new(game: &'game Game) -> RandomStrategy<'game> {
-        return RandomStrategy(game.0.values().collect());
+        return RandomStrategy(game.nodes().into_iter().collect());
     }
 }
 impl<'game> Strategy for RandomStrategy<'game> {

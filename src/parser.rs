@@ -149,7 +149,7 @@ pub fn parse(parity_game: &str) -> Game {
         nodes.insert(node.id, node);
     }
 
-    Game(nodes)
+    Game::new(nodes)
 }
 
 /// Parses a parity game from the specified file.

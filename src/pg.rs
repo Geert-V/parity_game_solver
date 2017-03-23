@@ -53,19 +53,84 @@ impl Hash for Node {
 
 
 #[derive(Debug)]
-pub struct Game(pub HashMap<u32, Node>);
+pub struct Game {
+    id_to_node: HashMap<u32, Node>,
+    max_prio: u32,
+    max_measure: Measure
+}
 
 impl Game {
-    
+
+    pub fn new(id_to_node: HashMap<u32, Node>) -> Game {
+        let max_prio = Game::_max_prio(&id_to_node);
+        let max_measure = Game::_max_measure(&id_to_node, max_prio);
+
+        Game {
+            id_to_node: id_to_node,
+            max_prio: max_prio,
+            max_measure: max_measure
+        }
+    }
+
+    pub fn node(&self, id: &u32) -> &Node {
+        &self.id_to_node[id]
+    }
+
+    pub fn nodes(&self) -> HashSet<&Node> {
+        self.id_to_node
+            .values()
+            .collect::<HashSet<&Node>>()
+    }
+
+    pub fn new_measure(&self) -> MeasureT {
+        let d = self.max_prio() as usize;
+        let m = Measure(vec![0; d]);
+
+        MeasureT::Measure(m)
+    }
+
     /// Returns the maximal priority of any node in the game.
     ///
     /// Returns the maximal priority of any node in the game, or 0 if there are no nodes defined.
     pub fn max_prio(&self) -> u32 {
-        self.0
-            .iter()
-            .map(|(id, n)| n.prio)
+        self.max_prio
+    }
+
+    pub fn max_measure(&self) -> &Measure {
+        &self.max_measure
+    }
+
+    fn _nodes_with_prio(id_to_node: &HashMap<u32, Node>, prio: u32) -> HashSet<&Node> {
+        id_to_node
+            .values()
+            .filter(|&n| n.prio == prio)
+            .collect::<HashSet<&Node>>()
+    }
+    
+    fn _max_prio(id_to_node: &HashMap<u32, Node>) -> u32 {
+        id_to_node
+            .values()
+            .map(|n| n.prio)
             .max()
             .unwrap_or(0)
+    }
+
+    fn _max_measure(id_to_node: &HashMap<u32, Node>, max_prio: u32) -> Measure {
+        let mut prio = max_prio.clone();
+        let mut measure = vec![0; prio as usize];
+
+        if prio % 2 == 1 {
+            prio -= 1;
+        }
+
+        while prio >= 0 {
+            let nr_of_nodes_with_prio = Game::_nodes_with_prio(id_to_node, prio).len(); 
+            measure[prio as usize] = nr_of_nodes_with_prio as u32;
+
+            prio -= 2;
+        }
+
+        Measure(measure)
     }
 }
 
@@ -77,11 +142,13 @@ pub struct Measure(pub Vec<u32>);
 
 impl Measure {
 
+    pub fn length(&self) -> usize {
+        self.0.len()
+    }
+
     /// Returns the value on the specified index wrapped in a `Some` or `None` if the index lies outside the range of values.
     fn get_value(&self, i: usize) -> Option<u32> {
-        if i < 0 {
-            None
-        } else if self.0.len() <= i {
+        if self.0.len() <= i {
             Some(self.0[i])
         } else {
             None
@@ -184,6 +251,52 @@ pub enum MeasureT {
 
 impl MeasureT {
 
+    pub fn inc(&self, game: &Game) -> MeasureT {
+
+        fn inc_measure(cur: &Measure, max: &Measure) -> MeasureT {
+            if cur == max {
+                // It is the maximal value, return `Top`.
+                MeasureT::Top
+            }
+            else {
+                // Clone the current measure and get its last index.
+                let mut new = cur.clone();
+                let mut i = cur.length() - 1;
+
+                // We can only increase the even numbers, so if odd go the the closest even number.
+                if i % 2 != 0 {
+                    i -= 1;
+                }
+
+                // Move of the vector backwards and increase the value where possible.
+                while i >= 0 {
+                    let max_v = max.0[i];
+                    let cur_v = cur.0[i];
+
+                    if cur_v < max_v {
+                        // We can increase this value, we are finished.
+                        new.0[i] += 1;
+                        break;
+                    }
+                    else {
+                        // Set this value to 0 as it had the maximum value, a higher value will be increased.
+                        new.0[i] = 0;
+                    }
+
+                    // Only the even numbers can change.
+                    i -= 2;
+                }
+
+                MeasureT::Measure(new)
+            }
+        }
+
+        match self {
+            &MeasureT::Top        => MeasureT::Top,
+            &MeasureT::Measure(ref m) => inc_measure(m, &game.max_measure())
+        }
+    }
+
     /// Returns `true` if this measure is equal to the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
     pub fn eq(&self, other: &MeasureT, i: usize) -> bool {
@@ -250,13 +363,13 @@ impl PartialEq for MeasureT {
 pub struct Progress(pub HashMap<u32, MeasureT>);
 
 impl Progress {
-    fn nodes(&self) -> HashSet<&u32> {
+    pub fn nodes(&self) -> HashSet<&u32> {
         self.0
             .keys()
             .collect::<HashSet<&u32>>()
     }
 
-    fn measure(&self, node_id: &u32) -> &MeasureT {
+    pub fn measure(&self, node_id: &u32) -> &MeasureT {
         &self.0[node_id]
     }
 }
