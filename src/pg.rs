@@ -89,6 +89,16 @@ impl Game {
         MeasureT::Measure(m)
     }
 
+    pub fn new_progress(&self) -> Progress {
+        let mut m = HashMap::new();
+
+        for node in self.nodes() {
+            m.insert(node.id, self.new_measure());
+        }
+
+        Progress(m)
+    }
+
     /// Returns the maximal priority of any node in the game.
     ///
     /// Returns the maximal priority of any node in the game, or 0 if there are no nodes defined.
@@ -374,32 +384,6 @@ impl Progress {
 
     pub fn measure(&self, node_id: &u32) -> &MeasureT {
         &self.0[node_id]
-    }
-}
-impl PartialOrd for Progress {
-    fn partial_cmp(&self, other: &Progress) -> Option<Ordering> {
-        let self_v = self.nodes();
-        let other_v = self.nodes();
-        
-        if self_v != other_v {
-            return None;
-        }
-
-        if self == other {
-            return Some(Ordering::Equal);
-        }
-
-        let ords = self_v
-            .iter()
-            .map(|node_id| self.measure(node_id).cmp(other.measure(node_id)))
-            .collect::<HashSet<Ordering>>();
-
-        if ords.len() != 1 {
-            None
-        } else {
-            let ord = ords.iter().next().unwrap();
-            Some(*ord)
-        }
     }
 }
 impl PartialEq for Progress {

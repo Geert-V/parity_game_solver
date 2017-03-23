@@ -28,9 +28,7 @@ fn prog(game: &Game, progress: &Progress, v: &Node, w: &Node) -> MeasureT {
 }
 
 // slide 26
-fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
-    // grab random vertex
-    let v = strategy.vertex();
+fn lift(game: &Game, v: &Node, progress: &Progress) -> Progress {
     let mut progress_val = progress.0.clone();
 
     let edges = v.succ.iter().map(|w| prog(game, progress, v, game.node(w)));
@@ -47,18 +45,32 @@ fn lift(game: &Game, strategy: &Strategy, progress: &Progress) -> Progress {
 }
 
 pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
-    let mut m = HashMap::new();
+    let max_i = game.nodes().len() - 1;
 
-    for node in game.nodes() {
-        m.insert(node.id, game.new_measure());
-    }
-    let mut progress = Progress(m);
+    let mut progress = game.new_progress();
+
     loop {
-        let l = lift(game, strategy, &progress);
-        if l >= progress {
+        let mut any_change = false;
+
+        for i in 0..max_i {
+            let v = strategy.vertex(i);
+
+            loop {
+                let progress_new = lift(game, v, &progress);
+                
+                if progress != progress_new {
+                    progress = progress_new;
+                    any_change = true;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if !any_change {
             break;
         }
-        progress = l;
     }
+
     return progress;
 }
