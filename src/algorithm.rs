@@ -16,11 +16,11 @@ fn prog(game: &Game, progress: &Progress, v: &Node, w: &Node) -> MeasureT {
 
     if prio_is_even {
         while m.lt(m_w, v_prio) {
-            m.inc(game);
+            m = m.inc(game);
         }
     } else {
         while m.le(m_w, v_prio) {
-            m.inc(game);
+            m = m.inc(game);
         }
     }
 
