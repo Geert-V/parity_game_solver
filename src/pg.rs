@@ -116,18 +116,21 @@ impl Game {
     }
 
     fn _max_measure(id_to_node: &HashMap<u32, Node>, max_prio: u32) -> Measure {
-        let mut prio = max_prio.clone();
+        let prio = max_prio.clone();
         let mut measure = vec![0; prio as usize];
 
-        if prio % 2 == 1 {
-            prio -= 1;
+        // Get the last even index of the measure.
+        let mut i = (prio as i32) - 1;
+
+        if i % 2 == 1 {
+            i -= 1;
         }
 
-        while prio >= 0 {
-            let nr_of_nodes_with_prio = Game::_nodes_with_prio(id_to_node, prio).len(); 
-            measure[prio as usize] = nr_of_nodes_with_prio as u32;
+        while i >= 0 {
+            let nr_of_nodes_with_prio = Game::_nodes_with_prio(id_to_node, i as u32).len(); 
+            measure[i as usize] = nr_of_nodes_with_prio as u32;
 
-            prio -= 2;
+            i -= 2;
         }
 
         Measure(measure)
@@ -261,7 +264,7 @@ impl MeasureT {
             else {
                 // Clone the current measure and get its last index.
                 let mut new = cur.clone();
-                let mut i = cur.length() - 1;
+                let mut i = (cur.length() as i32) - 1;
 
                 // We can only increase the even numbers, so if odd go the the closest even number.
                 if i % 2 != 0 {
@@ -270,17 +273,17 @@ impl MeasureT {
 
                 // Move of the vector backwards and increase the value where possible.
                 while i >= 0 {
-                    let max_v = max.0[i];
-                    let cur_v = cur.0[i];
+                    let max_v = max.0[i as usize];
+                    let cur_v = cur.0[i as usize];
 
                     if cur_v < max_v {
                         // We can increase this value, we are finished.
-                        new.0[i] += 1;
+                        new.0[i as usize] += 1;
                         break;
                     }
                     else {
                         // Set this value to 0 as it had the maximum value, a higher value will be increased.
-                        new.0[i] = 0;
+                        new.0[i as usize] = 0;
                     }
 
                     // Only the even numbers can change.
