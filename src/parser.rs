@@ -8,113 +8,82 @@ use pg::Game;
 use pg::Node;
 use pg::Owner;
 
-extern crate regex;
-use self::regex::Regex;
-use self::regex::Captures;
-
 /// Tries to parse the header data from the provided string.
 ///
 /// If the provided string is a valid header, then the maximum node ID specified in this header is returned.
 /// This value is then wrapped in `Some`. Otherwise, if the string is not a valid header, `None` is returned.
 /// A valid header has the format: 'parity <identifier>'.
+///
+/// #Panics
+/// If the provided string is a header, but is in an invalid format.
 fn try_parse_header(header: &str) -> Option<u32> {
-    
-    // Explanation:
-    // '^'                : the start of the string.
-    // 'parity '          : match this exact text.
-    // '(?P<max_id> ...)' : the name of a capture group.
-    // '\\d+'             : any number of digits.
-    // '\\s*?;?'          : a number of optional white spaces (non-greedy) followed by an optional semicolon.
-    // '$'                : the end of the string.
-    let reg_ex = Regex::new("^parity (?P<max_id>\\d+)\\s*?;?$");
+    let mut split = header.split_whitespace();
 
-    /// Takes the maximum node ID from the regular expression captures, and returns it.
-    ///
-    /// Note that this is an internal function and that the panics should never happen if the regular expression is successfully matched.
-    fn as_id(caps: Captures) -> u32 {
-        caps.name("max_id")
-            .expect("No maximal identifier found in the header.")
-            .as_str()
+    let def = split.next();
+    if def.is_some() && def.unwrap() == "parity" {
+        let max_id = split
+            .next()
+            .expect(&format!("The header '{}' does not contain a max identifier.", header))
             .parse::<u32>()
-            .expect("The max node ID is not a valid natural number.")
+            .expect(&format!("The max identifier of the header '{}' is not a valid natural number.", header));
+        
+        Some(max_id)
+    } else {
+        None
     }
-
-    reg_ex
-        .unwrap()
-        .captures(header.trim())
-        .map(as_id)
 }
 
-/// Retrieves the value of the captured string.
+/// Parse the node specification from the provided string.
 ///
-/// # Panics
-/// No value with the specified name has been captured.
-fn get_capture_as_string(caps: &Captures, name: &str) -> String {
-    caps.name(name).unwrap().as_str().to_string()
-}
-
-/// Tries to parse the node specification from the provided string.
-///
-/// If the provided string is a valid node specification, then the node is returned.
-/// This value is then wrapped in `Some`. Otherwise, if the string is not a valid node specification, `None` is returned.
+/// #Panics
+/// If the provided string is not a valid node specification.
 /// A valid node specification has the format: '<identifier> <priority> <owner> <successor> [<name>] [;]'.
-fn try_parse_node_spec(i: usize, node_spec: &str) -> Option<Node> {
-
-    // Explanation:
-    // '^'              : the start of the string.
-    // '(?P<name> ...)' : the name of a capture group.
-    // '\\d+'           : any number of digits.
-    // '[01]'           : either a zero or one.
-    // (\\d+,?)+        : one or more occurrences of digits followed by an optional comma. 
-    // \"               : matches a double quote.
-    // .+               : one or more non-white space character(s).
-    // '\\s*?;?'        : a number of optional white spaces (non-greedy) followed by an optional semicolon.
-    // '$'              : the end of the string.
-    let reg_ex = Regex::new("^(?P<id>\\d+) (?P<prio>\\d+) (?P<owner>[01]) (?P<succ>(\\d+,?)+)( \"(?P<name>.+)\")?\\s*?;?$").unwrap();
-
-    /// Converts from the regular expression capture to a `Node`.
-    ///
-    /// Note that this is an internal function and that the panics should never happen if the regular expression is successfully matched.
-    fn as_node(i: usize, caps : Captures) -> Node {
-        let id = get_capture_as_string(&caps, "id")
-            .parse::<u32>()
-            .unwrap();
-        let prio = get_capture_as_string(&caps, "prio")
-            .parse::<u32>()
-            .unwrap();
-        let owner = get_capture_as_string(&caps, "owner")
-            .parse::<Owner>()
-            .unwrap();
-        let succ = get_capture_as_string(&caps, "succ")
-            .split(',')
-            .map(|s| s.parse::<u32>().unwrap())
-            .collect::<HashSet<u32>>();
-        let name = caps
-            .name("name")
-            .map(|n| n.as_str().to_string());
-
-        Node {
-            id: id,
-            count: i,
-            prio: prio,
-            owner: owner,
-            succ: succ,
-            name: name
-        }
-    }
-
-    reg_ex
-        .captures(node_spec.trim())
-        .map(|cap| as_node(i, cap))
-}
-
-/// Parses the provided string as node specification in the format: '<identifier> <priority> <owner> <successor> [<name>] [;]'.
-///
-/// # Panics
-/// The provided string is not a valid node specification.
 fn parse_node_spec(i: usize, node_spec: &str) -> Node {
-    try_parse_node_spec(i, node_spec)
-        .expect(&format!("Invalid node specification: '{}'.", node_spec))
+    let mut split = node_spec.split_whitespace();
+
+    let id = split
+        .next()
+        .expect(&format!("No ID defined for node spec: '{}'", node_spec))
+        .parse::<u32>()
+        .expect(&format!("The ID defined for node spec: '{}' is not a natural number.", node_spec));
+    
+    let prio = split
+        .next()
+        .expect(&format!("No prio defined for node spec: '{}'", node_spec))
+        .parse::<u32>()
+        .expect(&format!("The prio defined for node spec '{}' is not a natural number.", node_spec));
+
+    let owner = split
+        .next()
+        .expect(&format!("No owner defined for node spec: '{}'", node_spec))
+        .parse::<Owner>()
+        .expect(&format!("The owner defined for node spec '{}' is invalid. Must be in rage [0-1].", node_spec));
+    
+    let succ = split
+        .next()
+        .expect(&format!("No successors defined for node spec: '{}'", node_spec))
+        .split(',')
+        .map(|s| s.parse::<u32>().expect(&format!("Invalid successor '{}' in node spec: '{}'.", s, node_spec)))
+        .collect::<HashSet<u32>>();
+
+    let name = split
+        .next()
+        .map(|n| { n
+            .split('"')
+            .filter(|part| !part.is_empty())
+            .next()
+            .expect(&format!("No name is defined, but is expected to in the string: '{}' of node spec: '{}'.", n, node_spec))
+            .to_string()
+        });
+
+    Node {
+        id: id,
+        count: i,
+        prio: prio,
+        owner: owner,
+        succ: succ,
+        name: name
+    }
 }
 
 /// Parses the provided string as a parity game.
@@ -124,14 +93,17 @@ fn parse_node_spec(i: usize, node_spec: &str) -> Node {
 /// - The string contains an invalid header or node specification.
 pub fn parse(parity_game: &str) -> Game {
     let mut nodes = HashMap::new();
-    let mut lines = parity_game.trim().split(';').peekable();
+    let mut lines = parity_game
+        .trim()
+        .split(';')
+        .peekable();
 
     // Check if the first line is a header.
     let max_id = lines
         .peek()
         .and_then(|header| try_parse_header(header));
     
-    // If the line is not a header (but does exist), parse it as a node specification.
+    // If the first line was indeed a header, skip it.
     if max_id.is_some() {
         lines.next();
     }
