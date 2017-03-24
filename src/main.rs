@@ -11,6 +11,7 @@ use strategies::*;
 fn main() {
     let args = arguments::get();
     
+    println!("");
     let game = parser::parse_from_file(&args.pg_file);
     println!("{:?}", game);
     println!("");
