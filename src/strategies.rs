@@ -7,24 +7,24 @@ pub trait Strategy {
     fn vertex(&self) -> Vec<&Node>;
 }
 
-pub struct InputStrategy<'game>(Vec<&'game Node>);
+pub struct InputStrategy<'game> (Vec<&'game Node>);
 impl<'game> InputStrategy<'game> {
     pub fn new(game: &'game Game) -> InputStrategy<'game> {
-        InputStrategy(game.nodes().into_iter().collect())
+        return InputStrategy(game.nodes().into_iter().collect())
+    }
+}
+pub struct RandomStrategy<'game> (Vec<&'game Node>);
+impl<'game> RandomStrategy<'game> {
+    pub fn new(game: &'game Game) -> RandomStrategy<'game> {
+        return RandomStrategy(game.nodes().into_iter().collect());
     }
 }
 
 impl<'game> Strategy for InputStrategy<'game> {
     fn vertex(&self) -> Vec<&Node> {
-        self.0.to_vec()
-    }
-}
-
-
-pub struct RandomStrategy<'game> (Vec<&'game Node>);
-impl<'game> RandomStrategy<'game> {
-    pub fn new(game: &'game Game) -> RandomStrategy<'game> {
-        return RandomStrategy(game.nodes().into_iter().collect());
+        let mut v = self.0.clone();
+        v.sort_by(|x, y| x.count.cmp(&y.count));
+        return v;
     }
 }
 impl<'game> Strategy for RandomStrategy<'game> {
