@@ -1,33 +1,24 @@
+mod arguments;
 mod pg;
 mod parser;
 mod algorithm;
 mod strategies;
 
+use arguments::*;
 use pg::*;
 use strategies::*;
-use std::env;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let game = parser::parse_from_file("pg_test.txt");
+    let args = arguments::get();
+    
+    let game = parser::parse_from_file(&args.pg_file);
     println!("{:?}", game);
     println!("");
-
-    let strat_input = &args[1];
     
-    match strat_input.as_str() {
-        "random" => {
-            run(&game, &RandomStrategy::new(&game));
-        },
-        "input" => {
-            run(&game, &InputStrategy::new(&game));
-        },
-        _ => {
-            panic!("No strategy specified! Try: input, random");
-        }
-    };
-
-
+    match args.strategy {
+        StrategySort::Random => run(&game, &RandomStrategy::new(&game)),
+        StrategySort::Input => run(&game, &InputStrategy::new(&game)),
+    }
 }
 
 fn run(game: &Game, strat: &Strategy) {
