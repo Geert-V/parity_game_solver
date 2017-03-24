@@ -58,7 +58,7 @@ fn get_capture_as_string(caps: &Captures, name: &str) -> String {
 /// If the provided string is a valid node specification, then the node is returned.
 /// This value is then wrapped in `Some`. Otherwise, if the string is not a valid node specification, `None` is returned.
 /// A valid node specification has the format: '<identifier> <priority> <owner> <successor> [<name>] [;]'.
-fn try_parse_node_spec(node_spec: &str) -> Option<Node> {
+fn try_parse_node_spec(i: usize, node_spec: &str) -> Option<Node> {
 
     // Explanation:
     // '^'              : the start of the string.
@@ -75,7 +75,7 @@ fn try_parse_node_spec(node_spec: &str) -> Option<Node> {
     /// Converts from the regular expression capture to a `Node`.
     ///
     /// Note that this is an internal function and that the panics should never happen if the regular expression is successfully matched.
-    fn as_node(caps : Captures) -> Node {
+    fn as_node(i: usize, caps : Captures) -> Node {
         let id = get_capture_as_string(&caps, "id")
             .parse::<u32>()
             .unwrap();
@@ -95,6 +95,7 @@ fn try_parse_node_spec(node_spec: &str) -> Option<Node> {
 
         Node {
             id: id,
+            count: i,
             prio: prio,
             owner: owner,
             succ: succ,
@@ -104,15 +105,15 @@ fn try_parse_node_spec(node_spec: &str) -> Option<Node> {
 
     reg_ex
         .captures(node_spec.trim())
-        .map(as_node)
+        .map(|cap| as_node(i, cap))
 }
 
 /// Parses the provided string as node specification in the format: '<identifier> <priority> <owner> <successor> [<name>] [;]'.
 ///
 /// # Panics
 /// The provided string is not a valid node specification.
-fn parse_node_spec(node_spec: &str) -> Node {
-    try_parse_node_spec(node_spec)
+fn parse_node_spec(i: usize, node_spec: &str) -> Node {
+    try_parse_node_spec(i, node_spec)
         .expect(&format!("Invalid node specification: '{}'.", node_spec))
 }
 
@@ -136,14 +137,13 @@ pub fn parse(parity_game: &str) -> Game {
     }
 
     // Parse the rest of the lines as node specifications.
-    for line in lines {
-
+    for (i, line) in lines.enumerate() {
         // Ignore this line if it only consists of white spaces or is empty.
         if line.trim().is_empty() {
             continue;
         }
 
-        let node = parse_node_spec(line);
+        let node = parse_node_spec(i, line);
         nodes.insert(node.id, node);
     }
 

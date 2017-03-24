@@ -34,6 +34,7 @@ impl str::FromStr for Owner {
 #[derive(Debug)]
 pub struct Node {
     pub id: u32,
+    pub count: usize,
     pub prio: u32,
     pub owner: Owner,
     pub succ: HashSet<u32>,
