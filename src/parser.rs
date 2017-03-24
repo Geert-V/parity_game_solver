@@ -123,18 +123,16 @@ fn parse_node_spec(node_spec: &str) -> Node {
 /// - The string contains an invalid header or node specification.
 pub fn parse(parity_game: &str) -> Game {
     let mut nodes = HashMap::new();
-    let mut lines = parity_game.trim().split(';');
+    let mut lines = parity_game.trim().split(';').peekable();
 
     // Check if the first line is a header.
-    let first_line = lines.next();
-    let max_id = first_line
-        .map(|line| line)
-        .and_then(try_parse_header);
+    let max_id = lines
+        .peek()
+        .and_then(|header| try_parse_header(header));
     
     // If the line is not a header (but does exist), parse it as a node specification.
-    if max_id.is_none() && first_line.is_some() {
-        let node = parse_node_spec(first_line.unwrap());
-        nodes.insert(node.id, node);
+    if max_id.is_some() {
+        lines.next();
     }
 
     // Parse the rest of the lines as node specifications.
