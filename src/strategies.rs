@@ -1,9 +1,10 @@
 extern crate rand;
 use self::rand::Rng;
 use pg::*;
+use std::borrow::BorrowMut;
 
 pub trait Strategy {
-    fn vertex(&self, usize) -> &Node;
+    fn vertex(&self) -> Vec<&Node>;
 }
 
 pub struct InputStrategy<'game>(Vec<&'game Node>);
@@ -14,8 +15,8 @@ impl<'game> InputStrategy<'game> {
 }
 
 impl<'game> Strategy for InputStrategy<'game> {
-    fn vertex(&self, i: usize) -> &Node {
-        &self.0[i]
+    fn vertex(&self) -> Vec<&Node> {
+        self.0.to_vec()
     }
 }
 
@@ -27,8 +28,10 @@ impl<'game> RandomStrategy<'game> {
     }
 }
 impl<'game> Strategy for RandomStrategy<'game> {
-    fn vertex(&self, i: usize) -> &Node {
-        let v = rand::thread_rng().choose(&self.0);
-        return v.unwrap();
+    fn vertex(&self) -> Vec<&Node> {
+        let mut clone = self.0.clone();
+        let mut v = clone.borrow_mut();
+        rand::thread_rng().shuffle(v);
+        return v.to_vec();
     }
 }
