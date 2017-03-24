@@ -44,13 +44,13 @@ fn lift(game: &Game, v: &Node, progress: &Progress) -> Progress {
     Progress(progress_val)
 }
 
-pub fn small_progress_measures(game: &Game, strategy: &Vec<&Node>) -> Progress {
+pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let mut progress = game.new_progress();
-
+    let vertices = strategy.vertex();
     loop {
         let mut any_change = false;
 
-        for v in strategy {
+        for v in &vertices {
             loop {
                 let progress_new = lift(game, v, &progress);
                 

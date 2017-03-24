@@ -17,21 +17,21 @@ fn main() {
     
     match strat_input.as_str() {
         "random" => {
-            run(&game, &RandomStrategy::new(&game).vertex());
+            run(&game, &RandomStrategy::new(&game));
         },
         "input" => {
-            run(&game, &InputStrategy::new(&game).vertex());
+            run(&game, &InputStrategy::new(&game));
         },
         _ => {
-            panic!("No strategy specified! Try: input, random")
+            panic!("No strategy specified! Try: input, random");
         }
     };
 
 
 }
 
-fn run(game: &Game, strat: &Vec<&Node>) {
-    let progress = algorithm::small_progress_measures(&game, &strat);
+fn run(game: &Game, strat: &Strategy) {
+    let progress = algorithm::small_progress_measures(&game, strat);
     println!("{:?}", progress);
     println!("");
     println!("Won even: {:?}", progress.winning_set(Owner::Even));

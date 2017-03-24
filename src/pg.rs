@@ -161,7 +161,7 @@ impl Measure {
 
     /// Returns the value on the specified index wrapped in a `Some` or `None` if the index lies outside the range of values.
     fn get_value(&self, i: usize) -> Option<u32> {
-        if self.0.len() <= i {
+        if i < self.length() {
             Some(self.0[i])
         } else {
             None
@@ -181,8 +181,7 @@ impl Measure {
     /// Returns `true` if this measure is equal to the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
     pub fn eq(&self, other: &Measure, i: usize) -> bool {
-
-        for x in 0..i {
+        for x in 0..(i + 1) {
             let self_v = self.get_value_or_zero(x);
             let other_v = other.get_value_or_zero(x);
 
@@ -192,14 +191,14 @@ impl Measure {
 
             return false;
         }
-
+        
         true
     }
 
     /// Returns `true` if this measure is greater than the provided measure up to and including the specified index.
     /// Otherwise `false` is returned.
     pub fn gt(&self, other: &Measure, i: usize) -> bool {
-        for x in 0..i {
+        for x in 0..(i+1) {
             let self_v = self.get_value_or_zero(x);
             let other_v = other.get_value_or_zero(x);
 
@@ -232,7 +231,7 @@ impl Measure {
 
 impl PartialOrd for Measure {
     fn partial_cmp(&self, other: &Measure) -> Option<Ordering> {
-        let max_l = cmp::max(self.0.len(), other.0.len());
+        let max_l = cmp::max(self.length(), other.length());
 
         if self.eq(other, max_l - 1) {
             Some(Ordering::Equal)
@@ -246,7 +245,8 @@ impl PartialOrd for Measure {
 }
 impl PartialEq for Measure {
     fn eq(&self, other: &Measure) -> bool {
-        let max_l = cmp::max(self.0.len(), other.0.len());
+        let max_l = cmp::max(self.length(), other.length());
+
         self.eq(other, max_l - 1)
     }
 }
@@ -274,7 +274,7 @@ impl MeasureT {
             else {
                 // Clone the current measure and get its last index.
                 let mut new = cur.clone();
-                let mut i = cur.length() as i32;
+                let mut i = cur.length() as i32 - 1;
 
                 // We can only increase the odd numbers, so if even go the the closest odd number.
                 if i % 2 == 0 {
