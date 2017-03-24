@@ -385,6 +385,21 @@ impl Progress {
     pub fn measure(&self, node_id: &u32) -> &MeasureT {
         &self.0[node_id]
     }
+
+    pub fn winning_set(&self, owner: Owner) -> HashSet<&u32> {
+        let mut all = self.0.iter();
+
+        match owner {
+            Owner::Even => all
+                .filter(|&(_, m)| m != &MeasureT::Top)
+                .map(|(id, _)| id)
+                .collect(),
+            Owner::Odd => all
+                .filter(|&(_, m)| m == &MeasureT::Top)
+                .map(|(id, _)| id)
+                .collect(),
+        }
+    }
 }
 impl PartialEq for Progress {
     fn eq(&self, other: &Progress) -> bool {
