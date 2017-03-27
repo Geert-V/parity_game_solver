@@ -47,7 +47,11 @@ fn lift(game: &Game, v: &Node, progress: &Progress) -> Progress {
 pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let mut progress = game.new_progress();
     let vertices = strategy.vertex();
+    let mut nr_of_iterations = 0;
+
     loop {
+        nr_of_iterations += 1;
+
         let mut any_change = false;
 
         for v in &vertices {
@@ -67,6 +71,8 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
             break;
         }
     }
+
+    println!("Number of iterations: {}", nr_of_iterations);
 
     return progress;
 }
