@@ -18,6 +18,9 @@ fn main() {
     match args.strategy {
         StrategySort::Random => run(&game, &RandomStrategy::new(&game)),
         StrategySort::Input => run(&game, &InputStrategy::new(&game)),
+        StrategySort::Priority => run(&game, &PriorityStrategy::new(&game)),
+        StrategySort::Succesor => run(&game, &SuccesorStrategy::new(&game)),
+        // StrategySort::Distance => run(&game, &DistanceStrategy::new(&game)),
     }
 }
 

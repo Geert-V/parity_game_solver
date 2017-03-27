@@ -5,7 +5,9 @@ use std::process;
 
 pub enum StrategySort {
     Random,
-    Input
+    Input,
+    Priority,
+    Succesor
 }
 
 pub struct Arguments {
@@ -19,7 +21,7 @@ fn exit_and_print_usage(args: &Vec<String>) {
         .and_then(OsStr::to_str)
         .unwrap_or("<application name>");
 
-    println!("usage: {} -pg <file path> [-input]/[-random]", prog_name);
+    println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]", prog_name);
     process::exit(0);
 }
 
@@ -66,6 +68,20 @@ pub fn get() -> Arguments {
                 }
 
                 strategy = Some(StrategySort::Random);
+            },
+            "-priority" => {
+                if strategy.is_some() {
+                    exit_and_print_usage(&args);
+                }
+
+                strategy = Some(StrategySort::Priority);
+            },
+            "-succesor" => {
+                if strategy.is_some() {
+                    exit_and_print_usage(&args);
+                }
+
+                strategy = Some(StrategySort::Succesor);
             },
             x => {
                 println!("Unknown: {}", x);
