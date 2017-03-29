@@ -22,7 +22,7 @@ fn exit_and_print_usage(args: &Vec<String>) {
         .and_then(OsStr::to_str)
         .unwrap_or("<application name>");
 
-    println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]", prog_name);
+    println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]/[-selfloop]/[-succesor]", prog_name);
     process::exit(0);
 }
 
