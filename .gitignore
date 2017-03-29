@@ -10,3 +10,6 @@ target/
 
 # Ignore the folder created by Visual Studio Code.
 .vscode/
+
+# Ignore the generated IPE figures.
+/figures/*.png
