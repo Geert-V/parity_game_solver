@@ -18,6 +18,7 @@ fn main() {
         StrategySort::Input => run(&game, &InputStrategy::new(&game)),
         StrategySort::Priority => run(&game, &PriorityStrategy::new(&game)),
         StrategySort::Succesor => run(&game, &SuccesorStrategy::new(&game)),
+        StrategySort::SelfLoop => run(&game, &SelfLoopStrategy::new(&game))
         // StrategySort::Distance => run(&game, &DistanceStrategy::new(&game)),
     }
 }

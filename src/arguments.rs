@@ -7,7 +7,8 @@ pub enum StrategySort {
     Random,
     Input,
     Priority,
-    Succesor
+    Succesor,
+    SelfLoop
 }
 
 pub struct Arguments {
@@ -82,6 +83,13 @@ pub fn get() -> Arguments {
                 }
 
                 strategy = Some(StrategySort::Succesor);
+            },
+            "-selfloop" => {
+                if strategy.is_some() {
+                    exit_and_print_usage(&args);
+                }
+
+                strategy = Some(StrategySort::SelfLoop);
             },
             x => {
                 println!("Unknown: {}", x);
