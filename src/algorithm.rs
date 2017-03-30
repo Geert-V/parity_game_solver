@@ -2,10 +2,11 @@ use std::collections::HashMap;
 use pg::*;
 use strategies::Strategy;
 
+static mut global_iterations: u64 = 0;
+
 // slide 22
 fn prog(game: &Game, progress: &Progress, v: &Node, w: &Node) -> MeasureT {
     let m_w = progress.measure(&w.id);
-
     if m_w == &MeasureT::Top {
         return MeasureT::Top;
     }
@@ -17,10 +18,12 @@ fn prog(game: &Game, progress: &Progress, v: &Node, w: &Node) -> MeasureT {
     if prio_is_even {
         while m.lt(m_w, v_prio) {
             m = m.inc(game);
+            unsafe { global_iterations+=1; }
         }
     } else {
         while m.le(m_w, v_prio) {
             m = m.inc(game);
+            unsafe { global_iterations+=1; }
         }
     }
 
@@ -48,6 +51,7 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let mut progress = game.new_progress();
     let vertices = strategy.vertex();
     let mut nr_of_iterations = 0;
+    let mut nr_of_subiterations = 0;
 
     loop {
         nr_of_iterations += 1;
@@ -57,7 +61,7 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
         for v in &vertices {
             loop {
                 let progress_new = lift(game, v, &progress);
-                
+                nr_of_subiterations += 1;
                 if progress != progress_new {
                     progress = progress_new;
                     any_change = true;
@@ -73,6 +77,10 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     }
 
     println!("Number of iterations: {}", nr_of_iterations);
+    println!("Number of sub-iterations: {}", nr_of_subiterations);
+    unsafe {
+        println!("Number of global-iterations: {}", global_iterations);
+    }
 
     return progress;
 }
