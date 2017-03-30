@@ -120,7 +120,7 @@ fn main() {
             let mut surviving_strategies = vec!();
             for _ in strategies.clone() {
                 let diff = Instant::now()+ Duration::from_millis(10) - start;
-                if timeout + Duration::from_millis(600) > diff {
+                if timeout + Duration::from_millis(100) > diff {
                     match rx.recv_timeout(timeout + Duration::from_millis(100) - diff) {
                         Ok(s) => { surviving_strategies.push(s); }
                         _ => {}
