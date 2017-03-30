@@ -46,7 +46,13 @@ fn lift(game: &Game, v: &Node, progress: &Progress) -> Progress {
     Progress(progress_val)
 }
 
-pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
+pub struct SpmResult {
+    pub prog: Progress,
+    pub nr_of_iterations: u64,
+    pub nr_of_subiterations: u64,
+    pub global_iterations: u64
+}
+pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> SpmResult {
     let mut progress = game.new_progress();
     let vertices = strategy.vertex();
     let mut nr_of_iterations = 0;
@@ -75,11 +81,18 @@ pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
         }
     }
 
-    println!("Number of iterations: {}", nr_of_iterations);
-    println!("Number of sub-iterations: {}", nr_of_subiterations);
+    // println!("Number of iterations: {}", nr_of_iterations);
+    // println!("Number of sub-iterations: {}", nr_of_subiterations);
+    let mut l_global_iterations = nr_of_subiterations;
     unsafe {
-        println!("Number of global-iterations: {}", global_iterations);
+        l_global_iterations = global_iterations.clone();
+        // println!("Number of global-iterations: {}", global_iterations);
     }
 
-    return progress;
+    return SpmResult {
+        prog: progress,
+        nr_of_iterations: nr_of_iterations,
+        nr_of_subiterations: nr_of_subiterations,
+        global_iterations: l_global_iterations
+    }
 }

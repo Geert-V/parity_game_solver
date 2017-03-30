@@ -148,9 +148,6 @@ impl Game {
     }
 }
 
-#[derive(Debug)]
-pub struct Play(pub LinkedList<u32>);
-
 #[derive(Debug, Eq, Clone, Ord)]
 pub struct Measure(pub Vec<u32>);
 
@@ -211,23 +208,23 @@ impl Measure {
         false
     }
 
-    /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn ge(&self, other: &Measure, i: usize) -> bool {
-        self.gt(other, i) || self.eq(other, i)
-    }
+    // /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
+    // /// Otherwise `false` is returned.
+    // pub fn ge(&self, other: &Measure, i: usize) -> bool {
+    //     self.gt(other, i) || self.eq(other, i)
+    // }
 
-    /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn lt(&self, other: &Measure, i: usize) -> bool {
-        !self.ge(other, i)
-    }
+    // /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
+    // /// Otherwise `false` is returned.
+    // pub fn lt(&self, other: &Measure, i: usize) -> bool {
+    //     !self.ge(other, i)
+    // }
 
-    /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn le(&self, other: &Measure, i: usize) -> bool {
-        !self.gt(other, i)
-    }
+    // /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
+    // /// Otherwise `false` is returned.
+    // pub fn le(&self, other: &Measure, i: usize) -> bool {
+    //     !self.gt(other, i)
+    // }
 }
 
 impl PartialOrd for Measure {
@@ -255,10 +252,8 @@ impl PartialEq for Measure {
 /// A measure that can also be the special value `Top`.
 #[derive(Debug, Eq, Ord, Clone)]
 pub enum MeasureT {
-
     /// The value `Top` that is greater than any `Measure`.
     Top,
-
     /// A measure with a value.
     Measure(Measure)
 }
@@ -291,8 +286,7 @@ impl MeasureT {
                         // We can increase this value, we are finished.
                         new.0[i as usize] += 1;
                         break;
-                    }
-                    else {
+                    } else {
                         // Set this value to 0 as it had the maximum value, a higher value will be increased.
                         new.0[i as usize] = 0;
                     }

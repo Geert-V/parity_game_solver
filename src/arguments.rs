@@ -2,7 +2,10 @@ use std::env;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::process;
+use std::fmt;
 
+
+#[derive(Debug, Copy, Clone)]
 pub enum StrategySort {
     Random,
     Input,
@@ -11,9 +14,24 @@ pub enum StrategySort {
     SelfLoop
 }
 
+impl fmt::Display for StrategySort {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+        // write!(f, "{}", match self {
+        //     Random => "Random",
+        //     Input => "Input",
+        //     Priority => "Priority",
+        //     Succesor => "Succesor",
+        //     SelfLoop => "SelfLoop"
+        // })
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Arguments {
+    pub testing: bool,
     pub pg_file: String,
-    pub strategy: StrategySort
+    pub strategy: Option<StrategySort>
 }
 
 fn exit_and_print_usage(args: &Vec<String>) {
@@ -23,6 +41,7 @@ fn exit_and_print_usage(args: &Vec<String>) {
         .unwrap_or("<application name>");
 
     println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]/[-selfloop]/[-succesor]", prog_name);
+    println!("or: {} [-ex <directory path>]", prog_name);
     process::exit(0);
 }
 
@@ -40,6 +59,7 @@ pub fn get() -> Arguments {
 
     // Skip the first argument as this is the program name.
     args_iter.next();
+    let mut testing = false;
 
     loop {
         let arg = args_iter.next();
@@ -49,6 +69,15 @@ pub fn get() -> Arguments {
         }
 
         match arg.unwrap().to_lowercase().as_ref() {
+            "-ex" => {
+                testing = true;
+                pg_file = args_iter.next();
+
+                if pg_file.is_none() {
+                    exit_and_print_usage(&args);
+                }
+                strategy = None;
+            },
             "-pg" => {
                 pg_file = args_iter.next();
 
@@ -98,12 +127,13 @@ pub fn get() -> Arguments {
         };
     }
 
-    if pg_file.is_none() || strategy.is_none() {
+    if pg_file.is_none() || (strategy.is_none() && !testing) {
         exit_and_print_usage(&args);
     }
 
     Arguments {
         pg_file: pg_file.unwrap().clone(),
-        strategy: strategy.unwrap()
+        testing: testing,
+        strategy: strategy
     }
 }
