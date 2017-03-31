@@ -1,8 +1,8 @@
 # How to build
 1. Execute the following command anywhere in the project directory:  
-   '''
+   ```shell
    cargo build [--release]
-   '''
+   ```
 2. A new folder named '*target*' has been created in the root of the project directory.
 
 # How to run
