@@ -7,7 +7,7 @@ pub enum StrategySort {
     Random,
     Input,
     Priority,
-    Succesor,
+    Successor,
     SelfLoop
 }
 
@@ -22,7 +22,7 @@ fn exit_and_print_usage(args: &Vec<String>) {
         .and_then(OsStr::to_str)
         .unwrap_or("<application name>");
 
-    println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]/[-selfloop]/[-succesor]", prog_name);
+    println!("usage: {} -pg <file path> [-input]/[-random]/[-priority]/[-selfloop]/[-successor]", prog_name);
     process::exit(0);
 }
 
@@ -77,12 +77,12 @@ pub fn get() -> Arguments {
 
                 strategy = Some(StrategySort::Priority);
             },
-            "-succesor" => {
+            "-successor" => {
                 if strategy.is_some() {
                     exit_and_print_usage(&args);
                 }
 
-                strategy = Some(StrategySort::Succesor);
+                strategy = Some(StrategySort::Successor);
             },
             "-selfloop" => {
                 if strategy.is_some() {

@@ -1,9 +1,8 @@
 use std::cmp;
 use std::collections::HashSet;
 use std::collections::HashMap;
-use std::collections::LinkedList;
 use std::str;
-use std::hash::{Hash, Hasher, SipHasher};
+use std::hash::{Hash, Hasher};
 
 use std::cmp::Ordering;
 
@@ -148,9 +147,6 @@ impl Game {
     }
 }
 
-#[derive(Debug)]
-pub struct Play(pub LinkedList<u32>);
-
 #[derive(Debug, Eq, Clone, Ord)]
 pub struct Measure(pub Vec<u32>);
 
@@ -209,24 +205,6 @@ impl Measure {
         }
 
         false
-    }
-
-    /// Returns `true` if this measure is greater than or equal to the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn ge(&self, other: &Measure, i: usize) -> bool {
-        self.gt(other, i) || self.eq(other, i)
-    }
-
-    /// Returns `true` if this measure is less than the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn lt(&self, other: &Measure, i: usize) -> bool {
-        !self.ge(other, i)
-    }
-
-    /// Returns `true` if this measure is less than or equal to the provided measure up to and including the specified index.
-    /// Otherwise `false` is returned.
-    pub fn le(&self, other: &Measure, i: usize) -> bool {
-        !self.gt(other, i)
     }
 }
 
@@ -388,7 +366,7 @@ impl Progress {
     }
 
     pub fn winning_set(&self, owner: Owner) -> HashSet<&u32> {
-        let mut all = self.0.iter();
+        let all = self.0.iter();
 
         match owner {
             Owner::Even => all

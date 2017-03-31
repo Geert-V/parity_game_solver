@@ -45,7 +45,7 @@ fn lift(game: &Game, v: &Node, progress: &Progress) -> Progress {
 
 pub fn small_progress_measures(game: &Game, strategy: &Strategy) -> Progress {
     let mut progress = game.new_progress();
-    let vertices = strategy.vertex();
+    let vertices = strategy.vertices();
     let mut nr_of_iterations = 0;
 
     loop {
